@@ -1,0 +1,37 @@
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; padding: 40px; }
+        h1 { color: #2563EB; border-bottom: 2px solid #E5E7EB; padding-bottom: 10px; }
+        .objective { margin-top: 30px; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; }
+        .objective-header { background: #F9FAFB; padding: 15px; font-weight: bold; }
+        .kr { padding: 10px 15px; border-top: 1px solid #E5E7EB; }
+        .rag-green { color: #10B981; }
+        .rag-amber { color: #F59E0B; }
+        .rag-red { color: #EF4444; }
+    </style>
+</head>
+<body>
+    <h1>Trackr OKR Status Report</h1>
+    {% if organization %}
+        <h2>{{ organization.name }}</h2>
+    {% endif %}
+
+    {% for obj in objectives %}
+    <div class="objective">
+        <div class="objective-header">
+            Objective: {{ obj.title }} ({{ obj.status }})
+        </div>
+        <div class="objective-body">
+            {% for kr in obj.key_results.all %}
+            <div class="kr">
+                <strong>KR:</strong> {{ kr.title }}<br/>
+                Status: <span class="rag-{{ kr.rag_status }}">{{ kr.rag_status|upper }}</span> | 
+                Progress: {{ kr.current_value }}{{ kr.unit }} / {{ kr.target_value }}{{ kr.unit }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html>
