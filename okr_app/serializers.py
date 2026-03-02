@@ -1,3 +1,5 @@
+from rest_framework import serializers
+from users_app.serializers import UserSerializer
 from .models import Objective, KeyResult, KeyResultHistory, RiskBlocker, Accomplishment, DecisionResource, Notification, AuditLog
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -36,7 +38,7 @@ class ObjectiveSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'organization', 'team', 'title', 'description', 
             'priority', 'status', 'owner', 'owner_details', 
-            'due_date', 'key_results', 'created_at', 'updated_at'
+            'due_date', 'rejection_reason', 'key_results', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 

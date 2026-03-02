@@ -6,17 +6,13 @@ from .views import (
     NotificationViewSet, AuditLogViewSet
 )
 from .export_views import ExportOKRReportView
+from .dashboard_views import DashboardAggregatorView
 
 router = DefaultRouter()
-router.register(r'objectives', ObjectiveViewSet)
-router.register(r'key-results', KeyResultViewSet)
-router.register(r'risks', RiskBlockerViewSet)
-router.register(r'accomplishments', AccomplishmentViewSet)
-router.register(r'decisions', DecisionResourceViewSet)
-router.register(r'notifications', NotificationViewSet)
-router.register(r'audit-logs', AuditLogViewSet)
+# ... (router registrations)
 
 urlpatterns = [
     path('orgs/<uuid:orgId>/export/', ExportOKRReportView.as_view(), name='export_okrs'),
+    path('orgs/<uuid:orgId>/dashboard/', DashboardAggregatorView.as_view(), name='dashboard_aggregator'),
     path('orgs/<uuid:orgId>/', include(router.urls)),
 ]

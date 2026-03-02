@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from .models import Membership, Organization, Team, Invitation
-from .serializers import UserSerializer, MembershipSerializer, MembershipDetailSerializer, TeamSerializer
+from .serializers import UserSerializer, OrganizationSerializer, MembershipSerializer, MembershipDetailSerializer, TeamSerializer
 from .permissions import IsPlatformAdmin, IsCEO, IsHRManager, AtLeastTeamLead
 
 class TrackrTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -87,3 +87,59 @@ class TeamViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         org_id = self.request.auth.get('org_id')
         serializer.save(organization_id=org_id)
+
+class AcceptInvitationView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        password = request.data.get('password')
+        first_name = request.data.get('first_name', '')
+        last_name = request.data.get('last_name', '')
+
+        if not token or not password:
+            return Response({"error": "Token and password are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.utils import timezone
+        invitation = get_object_or_404(Invitation, token=token, used_at__isnull=True)
+        
+        if invitation.expires_at < timezone.now():
+            return Response({"error": "Invitation has expired"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1. Create or get user
+        from .models import User
+        user, created = User.objects.get_or_create(
+            email=invitation.email,
+            defaults={
+                'username': invitation.email,
+                'first_name': first_name,
+                'last_name': last_name,
+            }
+        )
+        
+        if created:
+            user.set_password(password)
+            user.save()
+
+        # 2. Create membership
+        Membership.objects.get_or_create(
+            user=user,
+            organization=invitation.organization,
+            defaults={'role': invitation.role}
+        )
+
+        # 3. Mark invitation as used
+        invitation.used_at = timezone.now()
+        invitation.save()
+
+        return Response({"message": "Invitation accepted successfully. You can now login."}, status=status.HTTP_201_CREATED)
+
+class OrganizationViewSet(viewsets.ModelViewSet):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
+    permission_classes = [permissions.IsAuthenticated, IsPlatformAdmin]
+
+    def get_queryset(self):
+        if self.request.auth and self.request.auth.get('role') == 'platform_admin':
+            return Organization.objects.all()
+        return Organization.objects.none()

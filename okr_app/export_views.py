@@ -10,8 +10,9 @@ class ExportOKRReportView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, orgId):
-        # 1. Verify user belongs to this organization
-        if not request.user.memberships.filter(organization_id=orgId, is_active=True).exists():
+        # 1. Verify user's JWT org_id matches the requested orgId
+        jwt_org_id = request.auth.get('org_id')
+        if str(jwt_org_id) != str(orgId):
             raise PermissionDenied("You do not have access to this organization's reports.")
 
         # 2. Fetch data

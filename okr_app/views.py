@@ -93,9 +93,9 @@ class ObjectiveViewSet(BaseOrgScopedViewSet):
         if obj.status != 'pending_approval':
             return Response({"error": "Only pending objectives can be rejected"}, status=status.HTTP_400_BAD_REQUEST)
         
-        obj.status = 'draft' # Or a dedicated 'rejected' status if model adds it
+        obj.status = 'rejected'
+        obj.rejection_reason = reason
         obj.save()
-        # In a real app, we'd log the reason in a comment or audit log
         return Response(ObjectiveSerializer(obj).data)
 
 class KeyResultViewSet(BaseOrgScopedViewSet):
