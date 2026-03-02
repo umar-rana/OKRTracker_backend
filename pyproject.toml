@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "okr-tracker-backend"
+name = "argos-backend"
 version = "0.1.0"
-description = "High-density OKR Tracker Backend"
+description = "Argos Strategic OKR Platform Backend"
 authors = ["Antigravity <antigravity@google.com>"]
 readme = "README.md"
 
@@ -22,6 +22,10 @@ django-encrypted-model-fields = "^0.6.5"
 drf-spectacular = "^0.26.0"
 django-extensions = "^3.2.3"
 python-dotenv = "^1.0.0"
+django-storages = {extras = ["google"], version = ">=9.1.0"}
+google-cloud-storage = ">=2.10.0"
+bleach = ">=6.0.0"
+djangorestframework-ratelimit = ">=0.8.0"
 
 [build-system]
 requires = ["poetry-core"]

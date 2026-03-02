@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import viewsets, permissions, status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -77,8 +78,8 @@ class MembershipViewSet(viewsets.ModelViewSet):
         from .email_utils import send_trackr_email
         send_trackr_email(
             invitation.organization,
-            f"You're invited to join {invitation.organization.name} on Trackr",
-            f"Hi there,\n\nYou have been invited to join {invitation.organization.name} on Trackr as a {role}.\n\nClick here to accept: http://localhost:3000/accept-invitation?token={invitation.token}\n\nThis link expires in 72 hours.",
+            f"You're invited to join {invitation.organization.name} on Argos",
+            f"Hi there,\n\nYou have been invited to join {invitation.organization.name} on Argos as a {role}.\n\nClick here to accept: {settings.FRONTEND_URL}/accept-invitation?token={invitation.token}\n\nThis link expires in 72 hours.",
             email
         )
         return Response({"message": f"Invitation sent to {email}"})
@@ -143,8 +144,8 @@ class AcceptInvitationView(APIView):
         from .email_utils import send_trackr_email
         send_trackr_email(
             invitation.organization,
-            "Welcome to Trackr!",
-            f"Hi {user.first_name or user.email},\n\nWelcome to {invitation.organization.name} on Trackr! You can now login at http://localhost:3000/login",
+            "Welcome to Argos!",
+            f"Hi {user.first_name or user.email},\n\nWelcome to {invitation.organization.name} on Argos! You can now login at {settings.FRONTEND_URL}/login",
             user.email
         )
 
@@ -191,8 +192,8 @@ class EmailSettingsViewSet(viewsets.GenericViewSet):
         try:
             success = send_trackr_email(
                 instance.organization,
-                "Trackr Email Connection Test",
-                "If you are reading this, your email configuration on Trackr is working correctly!",
+                "Argos Email Connection Test",
+                "If you are reading this, your email configuration on Argos is working correctly!",
                 request.user.email
             )
             if success:

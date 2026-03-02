@@ -1,37 +1,189 @@
+<!DOCTYPE html>
 <html>
+
 <head>
+    <meta charset="utf-8">
+    <title>Argos OKR Report - {{ organization.name }}</title>
     <style>
-        body { font-family: 'Inter', sans-serif; padding: 40px; }
-        h1 { color: #2563EB; border-bottom: 2px solid #E5E7EB; padding-bottom: 10px; }
-        .objective { margin-top: 30px; border: 1px solid #E5E7EB; border-radius: 8px; overflow: hidden; }
-        .objective-header { background: #F9FAFB; padding: 15px; font-weight: bold; }
-        .kr { padding: 10px 15px; border-top: 1px solid #E5E7EB; }
-        .rag-green { color: #10B981; }
-        .rag-amber { color: #F59E0B; }
-        .rag-red { color: #EF4444; }
+        @page {
+            margin: 2cm;
+
+            @top-right {
+                content: "Argos Strategic OKR Platform";
+                font-size: 9pt;
+                color: #666;
+            }
+
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 9pt;
+                color: #666;
+            }
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .header {
+            border-bottom: 2px solid #1a365d;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .brand {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin: 0;
+        }
+
+        .org-name {
+            font-size: 14pt;
+            color: #4a5568;
+            margin: 5px 0 0 0;
+        }
+
+        .report-info {
+            float: right;
+            text-align: right;
+            font-size: 10pt;
+            color: #718096;
+        }
+
+        .objective-card {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+
+        .objective-title {
+            background-color: #f7fafc;
+            padding: 10px;
+            border-left: 4px solid #1a365d;
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .objective-meta {
+            font-size: 10pt;
+            color: #718096;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background-color: #edf2f7;
+            text-align: left;
+            padding: 8px;
+            font-size: 10pt;
+            border-bottom: 1px solid #cbd5e0;
+        }
+
+        td {
+            padding: 8px;
+            font-size: 10pt;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 8pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .rag-red {
+            background-color: #fed7d7;
+            color: #9b2c2c;
+        }
+
+        .rag-amber {
+            background-color: #feebc8;
+            color: #9c4221;
+        }
+
+        .rag-green {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
     </style>
 </head>
-<body>
-    <h1>Trackr OKR Status Report</h1>
-    {% if organization %}
-        <h2>{{ organization.name }}</h2>
-    {% endif %}
 
-    {% for obj in objectives %}
-    <div class="objective">
-        <div class="objective-header">
-            Objective: {{ obj.title }} ({{ obj.status }})
+<body>
+    <div class="header">
+        <div class="report-info">
+            Generated: {{ now|date:"DATETIME_FORMAT" }}<br>
+            Reference: {{ organization.id|truncatechars:8 }}
         </div>
-        <div class="objective-body">
-            {% for kr in obj.key_results.all %}
-            <div class="kr">
-                <strong>KR:</strong> {{ kr.title }}<br/>
-                Status: <span class="rag-{{ kr.rag_status }}">{{ kr.rag_status|upper }}</span> | 
-                Progress: {{ kr.current_value }}{{ kr.unit }} / {{ kr.target_value }}{{ kr.unit }}
-            </div>
-            {% endfor %}
-        </div>
+        <h1 class="brand">ARGOS</h1>
+        <h2 class="org-name">{{ organization.name }} - Strategic OKR Report</h2>
     </div>
+
+    {% for objective in objectives %}
+    <div class="objective-card">
+        <div class="objective-title">{{ objective.title }}</div>
+        <div class="objective-meta">
+            <strong>Owner:</strong> {{ objective.owner.get_full_name|default:objective.owner.username }} |
+            <strong>Status:</strong> {{ objective.get_status_display }} |
+            <strong>Due:</strong> {{ objective.due_date }}
+        </div>
+
+        {% if objective.key_results.all %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Key Result</th>
+                    <th style="width: 15%;">Target</th>
+                    <th style="width: 15%;">Current</th>
+                    <th style="width: 15%;">Progress</th>
+                    <th style="width: 15%;">Health</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kr in objective.key_results.all %}
+                <tr>
+                    <td>
+                        <strong>{{ kr.title }}</strong><br>
+                        <small>{{ kr.owner.username }}</small>
+                    </td>
+                    <td>{{ kr.target_value }} {{ kr.unit }}</td>
+                    <td>{{ kr.current_value }} {{ kr.unit }}</td>
+                    <td>
+                        {% widthratio kr.current_value kr.target_value 100 %}%
+                    </td>
+                    <td>
+                        <span class="status-pill rag-{{ kr.rag_status }}">
+                            {{ kr.rag_status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="padding-left: 10px; color: #a0aec0; font-style: italic;">No key results defined for this objective.
+        </p>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p>No objectives found for this organization.</p>
     {% endfor %}
+
+    <div
+        style="margin-top: 50px; border-top: 1px solid #edf2f7; pt-20; font-size: 8pt; color: #a0aec0; text-align: center;">
+        This report was automatically generated by the Argos Strategic OKR Platform. &copy; {% now "Y" %}
+    </div>
 </body>
+
 </html>

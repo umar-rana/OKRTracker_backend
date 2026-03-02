@@ -31,4 +31,4 @@ COPY . .
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "trackr_project.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "3", "argos_project.wsgi:application"]

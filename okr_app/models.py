@@ -71,6 +71,7 @@ class KeyResult(models.Model):
 
 class KeyResultHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='key_result_histories')
     key_result = models.ForeignKey(KeyResult, on_delete=models.CASCADE, related_name='history')
     previous_value = models.DecimalField(max_digits=15, decimal_places=4, null=True)
     new_value = models.DecimalField(max_digits=15, decimal_places=4)
@@ -83,6 +84,7 @@ class KeyResultHistory(models.Model):
     class Meta:
         ordering = ['-recorded_at']
         indexes = [
+            models.Index(fields=['organization', 'recorded_at'], name='krh_org_recorded_idx'),
             models.Index(fields=['key_result', 'recorded_at'], name='krh_kr_recorded_idx'),
         ]
 

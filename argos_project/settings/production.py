@@ -26,4 +26,15 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Static files
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+GS_BUCKET_NAME = config('GS_BUCKET_NAME', default='')
+GS_DEFAULT_ACL = None # Use bucket default

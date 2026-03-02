@@ -13,6 +13,8 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         org_id = self.request.auth.get('org_id')
+        if not org_id:
+            return Notification.objects.none()
         return Notification.objects.filter(organization_id=org_id, user=self.request.user)
 
     @action(detail=True, methods=['post'])
@@ -35,6 +37,8 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         org_id = self.request.auth.get('org_id')
+        if not org_id:
+            return AuditLog.objects.none()
         return AuditLog.objects.filter(organization_id=org_id)
 
 class BaseOrgScopedViewSet(viewsets.ModelViewSet):
@@ -44,9 +48,8 @@ class BaseOrgScopedViewSet(viewsets.ModelViewSet):
         # Use org_id from JWT token for isolation
         org_id = self.request.auth.get('org_id')
         if not org_id:
-            # Fallback for internal calls or non-JWT auth if necessary
-            membership = self.request.user.memberships.filter(is_active=True).first()
-            org_id = membership.organization_id if membership else None
+            # Strictly enforce org_id presence in authenticated requests
+            return self.queryset.model.objects.none()
             
         return self.queryset.model.objects.for_org(org_id)
 
@@ -120,6 +123,7 @@ class KeyResultViewSet(BaseOrgScopedViewSet):
         # Record history
         KeyResultHistory.objects.create(
             key_result=kr,
+            organization=kr.organization,
             previous_value=kr.current_value,
             new_value=new_value,
             previous_rag_status=kr.rag_status,

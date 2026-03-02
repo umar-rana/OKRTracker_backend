@@ -23,6 +23,12 @@ class Organization(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['slug'], name='org_slug_idx'),
+            models.Index(fields=['status'], name='org_status_idx'),
+        ]
+
     def __str__(self):
         return self.name
 
@@ -44,6 +50,9 @@ class Membership(models.Model):
 
     class Meta:
         unique_together = ('user', 'organization')
+        indexes = [
+            models.Index(fields=['user', 'organization', 'is_active'], name='mem_user_org_active_idx'),
+        ]
 
     def __str__(self):
         return f"{self.user.email} - {self.organization.name} ({self.role})"
@@ -85,7 +94,7 @@ class EmailSettings(models.Model):
         Organization, on_delete=models.CASCADE, related_name='email_settings'
     )
     provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, default=PROVIDER_GMAIL)
-    display_name = models.CharField(max_length=100, default='Trackr')
+    display_name = models.CharField(max_length=100, default='Argos')
     is_active = models.BooleanField(default=True)
 
     # Gmail SMTP
