@@ -1,6 +1,18 @@
-from rest_framework import serializers
-from .models import Objective, KeyResult, KeyResultHistory, RiskBlocker, Accomplishment, DecisionResource
-from users_app.serializers import UserSerializer, OrganizationSerializer
+from .models import Objective, KeyResult, KeyResultHistory, RiskBlocker, Accomplishment, DecisionResource, Notification, AuditLog
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    performed_by_details = UserSerializer(source='performed_by', read_only=True)
+    
+    class Meta:
+        model = AuditLog
+        fields = '__all__'
+        read_only_fields = ['id', 'performed_at']
 
 class KeyResultSerializer(serializers.ModelSerializer):
     owner_details = UserSerializer(source='owner', read_only=True)

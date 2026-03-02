@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     ObjectiveViewSet, KeyResultViewSet, 
-    RiskBlockerViewSet, AccomplishmentViewSet, DecisionResourceViewSet
+    RiskBlockerViewSet, AccomplishmentViewSet, DecisionResourceViewSet,
+    NotificationViewSet, AuditLogViewSet
 )
 from .export_views import ExportOKRReportView
 
@@ -12,6 +13,8 @@ router.register(r'key-results', KeyResultViewSet)
 router.register(r'risks', RiskBlockerViewSet)
 router.register(r'accomplishments', AccomplishmentViewSet)
 router.register(r'decisions', DecisionResourceViewSet)
+router.register(r'notifications', NotificationViewSet)
+router.register(r'audit-logs', AuditLogViewSet)
 
 urlpatterns = [
     path('orgs/<uuid:orgId>/export/', ExportOKRReportView.as_view(), name='export_okrs'),
