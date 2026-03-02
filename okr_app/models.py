@@ -29,6 +29,11 @@ class Objective(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['organization', 'status'], name='obj_org_status_idx'),
+        ]
+
     def __str__(self):
         return self.title
 
@@ -56,6 +61,11 @@ class KeyResult(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['organization', 'due_date'], name='kr_org_due_idx'),
+        ]
+
     def __str__(self):
         return self.title
 
@@ -72,6 +82,9 @@ class KeyResultHistory(models.Model):
 
     class Meta:
         ordering = ['-recorded_at']
+        indexes = [
+            models.Index(fields=['key_result', 'recorded_at'], name='krh_kr_recorded_idx'),
+        ]
 
 class RiskBlocker(models.Model):
     objects = OrganizationManager()
@@ -94,6 +107,11 @@ class RiskBlocker(models.Model):
     logged_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='logged_risks')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['organization', 'rag_status'], name='risk_org_rag_idx'),
+        ]
 
 class Accomplishment(models.Model):
     objects = OrganizationManager()
@@ -138,6 +156,11 @@ class Notification(models.Model):
     entity_id = models.UUIDField(null=True, blank=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'is_read'], name='notif_user_read_idx'),
+        ]
 
 class AuditLog(models.Model):
     objects = OrganizationManager()

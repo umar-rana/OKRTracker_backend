@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from .models import Membership, Organization, Team, Invitation
 from .serializers import UserSerializer, OrganizationSerializer, MembershipSerializer, MembershipDetailSerializer, TeamSerializer
-from .permissions import IsPlatformAdmin, IsCEO, IsHRManager, AtLeastTeamLead
+from .permissions import IsPlatformAdmin, IsCEO, IsHRManager, AtLeastTeamLead, AtLeastCEO
 
 class TrackrTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -74,7 +74,14 @@ class MembershipViewSet(viewsets.ModelViewSet):
             invited_by=request.user,
             expires_at=timezone.now() + timedelta(days=7)
         )
-        return Response({"message": f"Invitation sent to {email}", "token": invitation.token})
+        from .email_utils import send_trackr_email
+        send_trackr_email(
+            invitation.organization,
+            f"You're invited to join {invitation.organization.name} on Trackr",
+            f"Hi there,\n\nYou have been invited to join {invitation.organization.name} on Trackr as a {role}.\n\nClick here to accept: http://localhost:3000/accept-invitation?token={invitation.token}\n\nThis link expires in 72 hours.",
+            email
+        )
+        return Response({"message": f"Invitation sent to {email}"})
 
 class TeamViewSet(viewsets.ModelViewSet):
     serializer_class = TeamSerializer
@@ -132,6 +139,15 @@ class AcceptInvitationView(APIView):
         invitation.used_at = timezone.now()
         invitation.save()
 
+        # 4. Send Welcome Email
+        from .email_utils import send_trackr_email
+        send_trackr_email(
+            invitation.organization,
+            "Welcome to Trackr!",
+            f"Hi {user.first_name or user.email},\n\nWelcome to {invitation.organization.name} on Trackr! You can now login at http://localhost:3000/login",
+            user.email
+        )
+
         return Response({"message": "Invitation accepted successfully. You can now login."}, status=status.HTTP_201_CREATED)
 
 class OrganizationViewSet(viewsets.ModelViewSet):
@@ -143,3 +159,45 @@ class OrganizationViewSet(viewsets.ModelViewSet):
         if self.request.auth and self.request.auth.get('role') == 'platform_admin':
             return Organization.objects.all()
         return Organization.objects.none()
+
+from .models import EmailSettings
+from .serializers import EmailSettingsSerializer
+
+class EmailSettingsViewSet(viewsets.GenericViewSet):
+    serializer_class = EmailSettingsSerializer
+    permission_classes = [permissions.IsAuthenticated, AtLeastCEO]
+
+    def get_object(self):
+        org_id = self.request.auth.get('org_id')
+        obj, created = EmailSettings.objects.get_or_create(organization_id=org_id)
+        return obj
+
+    def list(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'])
+    def test(self, request):
+        instance = self.get_object()
+        from .email_utils import send_trackr_email
+        try:
+            success = send_trackr_email(
+                instance.organization,
+                "Trackr Email Connection Test",
+                "If you are reading this, your email configuration on Trackr is working correctly!",
+                request.user.email
+            )
+            if success:
+                return Response({"detail": f"Test email sent successfully to {request.user.email}"})
+            else:
+                return Response({"detail": "Failed to send test email. Check your provider logs."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

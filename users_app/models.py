@@ -1,6 +1,7 @@
 import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from encrypted_model_fields.fields import EncryptedCharField
 
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -70,5 +71,43 @@ class Invitation(models.Model):
     used_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class EmailSettings(models.Model):
+    PROVIDER_GMAIL = 'gmail'
+    PROVIDER_SENDGRID = 'sendgrid'
+    PROVIDER_AWS_SES = 'aws_ses'
+    PROVIDER_CHOICES = [
+        (PROVIDER_GMAIL, 'Gmail SMTP'),
+        (PROVIDER_SENDGRID, 'SendGrid'),
+        (PROVIDER_AWS_SES, 'AWS SES'),
+    ]
+
+    organization = models.OneToOneField(
+        Organization, on_delete=models.CASCADE, related_name='email_settings'
+    )
+    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES, default=PROVIDER_GMAIL)
+    display_name = models.CharField(max_length=100, default='Trackr')
+    is_active = models.BooleanField(default=True)
+
+    # Gmail SMTP
+    gmail_user = models.EmailField(blank=True, default='')
+    gmail_app_password = EncryptedCharField(max_digits=500, blank=True, default='')
+
+    # SendGrid
+    sendgrid_api_key = EncryptedCharField(max_digits=500, blank=True, default='')
+    sendgrid_from_email = models.EmailField(blank=True, default='')
+
+    # AWS SES
+    aws_access_key_id = EncryptedCharField(max_digits=500, blank=True, default='')
+    aws_secret_access_key = EncryptedCharField(max_digits=500, blank=True, default='')
+    aws_region = models.CharField(max_length=50, blank=True, default='us-east-1')
+    aws_from_email = models.EmailField(blank=True, default='')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Email Settings'
+        verbose_name_plural = 'Email Settings'
+
     def __str__(self):
-        return f"Invite to {self.email} for {self.organization.name}"
+        return f"Email Settings for {self.organization.name} ({self.provider})"

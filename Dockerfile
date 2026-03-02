@@ -1,26 +1,30 @@
 FROM python:3.11-slim
 
-# Install system dependencies for WeasyPrint and Psycopg2
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    python3-dev \
-    python3-pip \
-    python3-setuptools \
-    python3-wheel \
-    python3-cffi \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf2.0-0 \
-    libffi-dev \
-    shared-mime-info \
     libpq-dev \
+    python3-dev \
+    libpango-1.0-0 \
+    libharfbuzz0b \
+    libpangoft2-1.0-0 \
+    libffi-dev \
+    libjpeg-dev \
+    libopenjp2-7-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Install poetry
+RUN pip install poetry
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy dependency files
+COPY pyproject.toml poetry.lock* /app/
+
+# Install dependencies (no dev dependencies)
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-dev --no-interaction --no-ansi
 
 COPY . .
 

@@ -1,11 +1,16 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, SwitchOrganizationView, MembershipViewSet, TeamViewSet, AcceptInvitationView, OrganizationViewSet
+from .views import (
+    LoginView, SwitchOrganizationView, MembershipViewSet, 
+    TeamViewSet, AcceptInvitationView, OrganizationViewSet,
+    EmailSettingsViewSet
+)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r'members', MembershipViewSet, basename='membership')
 router.register(r'teams', TeamViewSet, basename='team')
+router.register(r'email-settings', EmailSettingsViewSet, basename='email-settings')
 router.register(r'admin/organizations', OrganizationViewSet, basename='organization')
 
 urlpatterns = [

@@ -24,7 +24,24 @@ class MembershipDetailSerializer(serializers.ModelSerializer):
         model = Membership
         fields = ['id', 'user', 'organization', 'organization_name', 'role', 'is_active', 'joined_at']
 
-from .models import Team
+from .models import Team, EmailSettings
+
+class EmailSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailSettings
+        fields = [
+            'id', 'provider', 'display_name', 'is_active',
+            'gmail_user', 'gmail_app_password',
+            'sendgrid_api_key', 'sendgrid_from_email',
+            'aws_access_key_id', 'aws_secret_access_key', 'aws_region', 'aws_from_email',
+            'updated_at'
+        ]
+        extra_kwargs = {
+            'gmail_app_password': {'write_only': True},
+            'sendgrid_api_key': {'write_only': True},
+            'aws_access_key_id': {'write_only': True},
+            'aws_secret_access_key': {'write_only': True},
+        }
 
 class TeamSerializer(serializers.ModelSerializer):
     lead_details = UserSerializer(source='lead', read_only=True)
