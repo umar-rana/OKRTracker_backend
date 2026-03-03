@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install poetry
 RUN pip install poetry
-
+RUN poetry install --only main --no-interaction --no-ansi
 WORKDIR /app
 
 # Copy dependency files
