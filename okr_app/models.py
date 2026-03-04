@@ -57,7 +57,10 @@ class KeyResult(models.Model):
     priority = models.CharField(max_length=5, choices=PRIORITIES, default='p2')
     rag_status = models.CharField(max_length=10, choices=RAG_STATUSES, default='green')
     due_date = models.DateField()
+    key_activity = models.TextField(blank=True, help_text="Key activities to be performed for this KR.")
+    metric = models.CharField(max_length=255, blank=True, help_text="The specific metric used to measure progress.")
     related_files_url = models.URLField(blank=True)
+    notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -71,7 +74,7 @@ class KeyResult(models.Model):
 
 class KeyResultHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='key_result_histories')
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="key_result_histories", null=True, blank=True)
     key_result = models.ForeignKey(KeyResult, on_delete=models.CASCADE, related_name='history')
     previous_value = models.DecimalField(max_digits=15, decimal_places=4, null=True)
     new_value = models.DecimalField(max_digits=15, decimal_places=4)

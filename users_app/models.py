@@ -99,15 +99,15 @@ class EmailSettings(models.Model):
 
     # Gmail SMTP
     gmail_user = models.EmailField(blank=True, default='')
-    gmail_app_password = EncryptedCharField(max_digits=500, blank=True, default='')
+    gmail_app_password = EncryptedCharField(max_length=500, blank=True, default='')
 
     # SendGrid
-    sendgrid_api_key = EncryptedCharField(max_digits=500, blank=True, default='')
+    sendgrid_api_key = EncryptedCharField(max_length=500, blank=True, default='')
     sendgrid_from_email = models.EmailField(blank=True, default='')
 
     # AWS SES
-    aws_access_key_id = EncryptedCharField(max_digits=500, blank=True, default='')
-    aws_secret_access_key = EncryptedCharField(max_digits=500, blank=True, default='')
+    aws_access_key_id = EncryptedCharField(max_length=500, blank=True, default='')
+    aws_secret_access_key = EncryptedCharField(max_length=500, blank=True, default='')
     aws_region = models.CharField(max_length=50, blank=True, default='us-east-1')
     aws_from_email = models.EmailField(blank=True, default='')
 

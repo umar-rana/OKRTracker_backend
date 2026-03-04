@@ -22,10 +22,11 @@ class KeyResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = KeyResult
         fields = [
-            'id', 'objective', 'title', 'description', 'kr_type', 
-            'start_value', 'target_value', 'current_value', 'unit', 
-            'owner', 'owner_details', 'priority', 'rag_status', 
-            'due_date', 'created_at', 'updated_at'
+            'id', 'objective', 'title', 'description', 'kr_type',
+            'start_value', 'target_value', 'current_value', 'unit',
+            'owner', 'owner_details', 'co_owner', 'priority', 'rag_status',
+            'due_date', 'key_activity', 'metric', 'notes',
+            'related_files_url', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
